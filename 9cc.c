@@ -86,10 +86,10 @@ Node *expr(){
 
 	for(;;){
 		if(consume('+')){
-			node = new_code(ND_ADD, node, mul());
+			node = new_node(ND_ADD, node, mul());
 		}
 		else if(consume('-')){
-			node = new_code(ND_SUB, node, mul());
+			node = new_node(ND_SUB, node, mul());
 		}
 		else{
 			return node;
