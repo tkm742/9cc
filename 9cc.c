@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// branch test
+
 typedef enum {
 	TK_RESERVED, // 記号
 	TK_NUM, // 整数トークン
