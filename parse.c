@@ -9,7 +9,9 @@
 
 
 extern Token *token;
+extern Node *code[100];
 extern char *user_input;
+LVar *locals;
 
 
 void error_at(char *loc, char *fmt, ...){
@@ -45,6 +47,15 @@ bool consume(char *op){
 	}
 	token = token->next;
 	return true;
+}
+
+Token *consume_ident(){
+    if(token->kind != TK_IDENT){
+        return NULL;
+    }
+    Token *tok_ident = token;
+    token = token->next;
+    return tok_ident;
 }
 
 // 次のトークンが期待している記号の時は、トークンを１つ読み進める。
@@ -89,6 +100,18 @@ bool startswith(char *p, char *q){
 	return memcmp(p, q, strlen(q)) == 0;
 }
 
+// 変数を名前で検索する。ない場合はNULL。
+LVar *find_lvar(Token *tok){
+	for(LVar *var = locals; var; var = var->next){
+		if(var->len == tok->len && !memcmp(tok->str, var->name, var->len)){
+			return var;
+		}
+		else{
+			return NULL;
+		}
+	}
+}
+
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize(char *p){
 	Token head;
@@ -109,10 +132,21 @@ Token *tokenize(char *p){
 			continue;
 		}
 
-		if(strchr("+-*/()<>", *p)){
+		if(strchr("+-*/()<>;=", *p)){
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
+
+        if(isalpha(*p)){
+			char *p_before = p;
+			int len = 0;
+			while(isalpha(*p) || isdigit(*p)){
+				len++;
+				p++;
+			}
+            cur = new_token(TK_IDENT, cur, p_before, len);
+            continue;
+        }
 
 		if(isdigit(*p)){
 			cur = new_token(TK_NUM, cur, p, 0);
@@ -144,8 +178,31 @@ Node *new_node_num(int val){
 	return node;
 }
 
+void *program(){
+    int i = 0;
+    while(!at_eof()){
+        code[i++] = stmt();
+    }
+    code[i] = NULL;
+}
+
+Node *stmt(){
+    Node *node = expr();
+    expect(";");
+    return node;
+}
+
 Node *expr(){
-	return equality();
+	return assign();
+}
+
+Node *assign(){
+    Node *node = equality();
+
+    if(consume("=")){
+         node = new_node(ND_ASSIGN, node, assign());
+    }
+    return node;
 }
 
 Node *equality(){
@@ -234,6 +291,32 @@ Node *primary(){
 		expect(")");
 		return node;
 	}
+
+    Token *tok = consume_ident();
+    if(tok){
+        Node *node = calloc(1, sizeof(Node));
+        node->kind = ND_LVAR;
+
+		LVar *lvar = find_lvar(tok);
+		if(lvar){
+			node->offset = lvar->offset;
+		}
+		else{
+			lvar = calloc(1, sizeof(LVar));
+			lvar->next = locals;
+			lvar->name = tok->str;
+			lvar->len = tok->len;
+			if(locals == NULL){
+				lvar->offset = 8;
+			}
+			else{
+				lvar->offset = locals->offset + 8;
+			}
+			node->offset = lvar->offset;
+			locals = lvar;
+		}
+        return node;
+    }
 
 	return new_node_num(expect_number());
 }

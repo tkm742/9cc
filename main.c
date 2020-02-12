@@ -8,7 +8,9 @@
 #include "9cc.h"
 
 Token *token; // 現在注目しているトークン
+Node *code[100];
 char *user_input; // 入力プログラム
+
 
 int main(int argc, char **argv){
 
@@ -20,19 +22,31 @@ int main(int argc, char **argv){
 	// トークナイズして、抽象構文木を生成
 	user_input = argv[1];
 	token = tokenize(argv[1]);
-	Node *node = expr();
+	program();
 
 	// アセンブリの前半部分を出力
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n");
 	printf("main:\n");
 
-	// 抽象構文木を下りながらコード生成
-	gen(node);
+    // プロローグ
+    // 変数26個分の領域を確保する
+    printf("    push rbp\n");
+    printf("    mov rbp, rsp\n");
+    printf("    sub rsp, 208\n"); // 8bit×26文字
 
-	// スタックトップに式全体の値が残っているはずなので
-	// それをraxにロードし返り値とする
-	printf("	pop rax\n");
+	// 先頭の式から、抽象構文木を下りコード生成
+	for(int i = 0; code[i]; i++){
+        gen(code[i]);
+
+        // 式の評価結果をポップ
+        printf("    pop rax\n");
+    }
+
+	// エピローグ
+    // 最後の式の結果がRAXに残っているので、それが返り値
+    printf("    mov rsp, rbp\n");
+	printf("	pop rbp\n");
 	printf("	ret\n");
     return 0;
 }
