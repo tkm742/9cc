@@ -4,6 +4,7 @@ typedef enum {
 	TK_RESERVED, // 記号
 	TK_IDENT, // 識別子
 	TK_NUM, // 整数トークン
+	TK_RETURN, // returnトークン
 	TK_EOF // 入力終わりトークン
 } TokenKind;
 
@@ -28,6 +29,7 @@ typedef enum {
 	ND_LE, // <=
 	ND_ASSIGN, // =
 	ND_LVAR, // local variable
+	ND_RETURN, // return
 	ND_NUM, // integer
 } NodeKind;
 
@@ -63,6 +65,7 @@ int expect_number();
 bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 bool startswith(char *p, char *q);
+int is_alnum(char c);
 Token *tokenize(char *p);
 
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
