@@ -40,5 +40,7 @@ try 1 "1 >= 1;"
 try 0 "1 >= 2;"
 try 2 "LVar_1 = 2; LVar_1;"
 try 3 "a = 3; return a;"
+try 1 "if(1 == 1) return 1; else return 0;"
+try 0 "if(1 == 0) return 1; else return 0;"
 
 echo OK

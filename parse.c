@@ -152,6 +152,18 @@ Token *tokenize(char *p){
 			continue;
 		}
 
+		if(strncmp(p, "if", 2) == 0 && !is_alnum(p[2])){
+			cur = new_token(TK_RESERVED, cur, p, 2);
+			p += 2;
+			continue;
+		}
+
+		if(strncmp(p, "else", 4) == 0 && !is_alnum(p[4])){
+			cur = new_token(TK_RESERVED, cur, p, 4);
+			p += 4;
+			continue;
+		}
+
 		if(strncmp(p, "return", 6) == 0 && !is_alnum(p[6])){
 			cur = new_token(TK_RETURN, cur, p, 6);
 			p += 6;
@@ -214,6 +226,16 @@ Node *stmt(){
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_RETURN;
 		node->lhs = expr();
+	}
+	else if(consume("if")){
+		expect("(");
+		node = expr();
+		expect(")");
+		node = new_node(ND_IF, node, stmt());
+		if(consume("else")){
+			node = new_node(ND_ELSE, node, stmt());
+		}
+		return node;
 	}
 	else{
 		node = expr();

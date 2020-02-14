@@ -4,8 +4,9 @@ typedef enum {
 	TK_RESERVED, // 記号
 	TK_IDENT, // 識別子
 	TK_NUM, // 整数トークン
+	TK_IF, // ifトークン
+	TK_EOF, // 入力終わりトークン
 	TK_RETURN, // returnトークン
-	TK_EOF // 入力終わりトークン
 } TokenKind;
 
 // トークン型
@@ -31,6 +32,8 @@ typedef enum {
 	ND_LVAR, // local variable
 	ND_RETURN, // return
 	ND_NUM, // integer
+	ND_IF, // if
+	ND_ELSE, // else
 } NodeKind;
 
 // 抽象構文木のノードの型

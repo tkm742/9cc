@@ -7,6 +7,9 @@
 
 #include "9cc.h"
 
+int cnt_Lend;
+int cnt_Lelse;
+
 
 void gen_lval(Node *node){
     if(node->kind != ND_LVAR){
@@ -27,6 +30,25 @@ void gen(Node *node){
 		printf("	mov rsp, rbp\n");
 		printf("	pop rbp\n");
 		printf("	ret\n");
+		return;
+	case ND_ELSE:
+		gen(node->lhs->lhs);
+		printf("	pop rax\n");
+		printf("	cmp rax, 0\n");
+		printf("	je .Lelse%03d\n", cnt_Lelse);
+		gen(node->lhs->rhs);
+		printf("	jmp .Lend%03d\n", cnt_Lend);
+		printf(".Lelse%03d:\n", cnt_Lelse++);
+		gen(node->rhs);
+		printf(".Lend%03d:\n", cnt_Lend++);
+		return;
+	case ND_IF:
+		gen(node->lhs);
+		printf("	pop rax\n");
+		printf("	cmp rax, 0\n");
+		printf("	je .Lend%03d\n", cnt_Lend);
+		gen(node->rhs);
+		printf(".Lend%03d:\n", cnt_Lend++);
 		return;
     case ND_NUM:
         printf("    push %d\n", node->val);
