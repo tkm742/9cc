@@ -33,7 +33,6 @@ typedef enum {
 	ND_RETURN, // return
 	ND_NUM, // integer
 	ND_IF, // if
-	ND_ELSE, // else
 	ND_WHILE, // while
 	ND_FOR, // for
 } NodeKind;
@@ -44,6 +43,11 @@ struct Node {
 	NodeKind kind; // ノードの型
 	Node *lhs; // 左辺
 	Node *rhs; // 右辺
+	Node *cond; // 条件式
+	Node *then; // 条件を満たした場合の処理
+	Node *els; // 条件を満たさなかった場合の処理
+	Node *init; // forの初期化処理
+	Node *inc; // forのincrement処理
 	int val; // kindがND_NUMのとき、その数値
 	int offset; // kindがND_LVARのとき、RBPからのoffset
 };
@@ -73,7 +77,11 @@ bool startswith(char *p, char *q);
 int is_alnum(char c);
 Token *tokenize(char *p);
 
-Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
+Node *new_node(NodeKind kind);
+Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);
+Node *new_node_ifelse(Node *cond, Node *then, Node *els);
+Node *new_node_while(Node *cond, Node *then);
+Node *new_node_for(Node *init, Node *cond, Node *inc, Node *then);
 Node *new_node_num(int val);
 void *program();
 Node *stmt();

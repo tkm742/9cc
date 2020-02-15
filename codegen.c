@@ -37,51 +37,53 @@ void gen(Node *node){
 		printf("	pop rbp\n");
 		printf("	ret\n");
 		return;
-	case ND_ELSE:
-		cnt_Lelse_tmp = cnt_Lelse++;
-		cnt_Lend_tmp = cnt_Lend++;
-		gen(node->lhs->lhs);
-		printf("	pop rax\n");
-		printf("	cmp rax, 0\n");
-		printf("	je .Lelse%03d\n", cnt_Lelse_tmp);
-		gen(node->lhs->rhs);
-		printf("	jmp .Lend%03d\n", cnt_Lend_tmp);
-		printf(".Lelse%03d:\n", cnt_Lelse_tmp);
-		gen(node->rhs);
-		printf(".Lend%03d:\n", cnt_Lend_tmp);
-		return;
 	case ND_IF:
-		cnt_Lend_tmp = cnt_Lend++;
-		gen(node->lhs);
-		printf("	pop rax\n");
-		printf("	cmp rax, 0\n");
-		printf("	je .Lend%03d\n", cnt_Lend_tmp);
-		gen(node->rhs);
-		printf(".Lend%03d:\n", cnt_Lend_tmp);
+		if(node->els){
+			cnt_Lelse_tmp = cnt_Lelse++;
+			cnt_Lend_tmp = cnt_Lend++;
+			gen(node->cond);
+			printf("	pop rax\n");
+			printf("	cmp rax, 0\n");
+			printf("	je .Lelse%03d\n", cnt_Lelse_tmp);
+			gen(node->then);
+			printf("	jmp .Lend%03d\n", cnt_Lend_tmp);
+			printf(".Lelse%03d:\n", cnt_Lelse_tmp);
+			gen(node->els);
+			printf(".Lend%03d:\n", cnt_Lend_tmp);
+		}
+		else{
+			cnt_Lend_tmp = cnt_Lend++;
+			gen(node->cond);
+			printf("	pop rax\n");
+			printf("	cmp rax, 0\n");
+			printf("	je .Lend%03d\n", cnt_Lend_tmp);
+			gen(node->then);
+			printf(".Lend%03d:\n", cnt_Lend_tmp);
+		}
 		return;
 	case ND_WHILE:
 		cnt_Lbegin_tmp = cnt_Lbegin++;
 		cnt_Lend_tmp = cnt_Lend++;
 		printf(".Lbegin%03d:\n", cnt_Lbegin_tmp);
-		gen(node->lhs);
+		gen(node->cond);
 		printf("	pop rax\n");
 		printf("	cmp rax, 0\n");
 		printf("	je .Lend%03d\n", cnt_Lend_tmp);
-		gen(node->rhs);
+		gen(node->then);
 		printf("	jmp .Lbegin%03d\n", cnt_Lbegin_tmp);
 		printf(".Lend%03d:\n", cnt_Lend_tmp);
 		return;
 	case ND_FOR:
 		cnt_Lbegin_tmp = cnt_Lbegin++;
 		cnt_Lend_tmp = cnt_Lend++;
-		gen(node->lhs->lhs->lhs->rhs);
+		gen(node->init);
 		printf(".Lbegin%03d:\n", cnt_Lbegin_tmp);
-		gen(node->lhs->lhs->rhs);
+		gen(node->cond);
 		printf("	pop rax\n");
 		printf("	cmp rax, 0\n");
 		printf("	je .Lend%03d\n", cnt_Lend_tmp);
-		gen(node->rhs);
-		gen(node->lhs->rhs);
+		gen(node->then);
+		gen(node->inc);
 		printf("	jmp .Lbegin%03d\n", cnt_Lbegin_tmp);
 		printf(".Lend%03d:", cnt_Lend_tmp);
 		return;

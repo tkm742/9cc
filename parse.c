@@ -208,11 +208,44 @@ Token *tokenize(char *p){
 	return head.next;
 }
 
-Node *new_node(NodeKind kind, Node *lhs, Node *rhs){
+Node *new_node(NodeKind kind){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = kind;
+	return node;
+}
+
+Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = kind;
 	node->lhs = lhs;
 	node->rhs = rhs;
+	return node;
+}
+
+Node *new_node_ifelse(Node *cond, Node *then, Node *els){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_IF;
+	node->cond = cond;
+	node->then = then;
+	node->els  = els;
+	return node;
+}
+
+Node *new_node_while(Node *cond, Node *then){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_WHILE;
+	node->cond = cond;
+	node->then = then;
+	return node;
+}
+
+Node *new_node_for(Node *init, Node *cond, Node *inc, Node *then){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_FOR;
+	node->init = init;
+	node->cond = cond;
+	node->inc  = inc;
+	node->then = then;
 	return node;
 }
 
@@ -240,45 +273,38 @@ Node *stmt(){
 		node->lhs = expr();
 	}
 	else if(consume("if")){
+		Node *cond, *then, *els;
 		expect("(");
-		node = expr();
+		cond = expr();
 		expect(")");
-		node = new_node(ND_IF, node, stmt());
+		then = stmt();
 		if(consume("else")){
-			node = new_node(ND_ELSE, node, stmt());
+			els = stmt();
 		}
-		return node;
+		return new_node_ifelse(cond, then, els);
 	}
 	else if(consume("while")){
 		expect("(");
 		node = expr();
 		expect(")");
-		return new_node(ND_WHILE, node, stmt());
+		return new_node_while(node, stmt());
 	}
 	else if(consume("for")){
+		Node *init = NULL, *cond = NULL, *inc = NULL;
 		expect("(");
-		if(strncmp(token->str, ";", 1) == 0){
-			node = new_node(ND_FOR, node, NULL);
-		}
-		else{
-			node = new_node(ND_FOR, node, expr());
+		if(strncmp(token->str, ";", 1) != 0){
+			init = expr();
 		}
 		expect(";");
-		if(strncmp(token->str, ";", 1) == 0){
-			node = new_node(ND_FOR, node, NULL);
-		}
-		else{
-			node = new_node(ND_FOR, node, expr());
+		if(strncmp(token->str, ";", 1) != 0){
+			cond = expr();
 		}
 		expect(";");
-		if(strncmp(token->str, ")", 1) == 0){
-			node = new_node(ND_FOR, node, NULL);
-		}
-		else{
-			node = new_node(ND_FOR, node, expr());
+		if(strncmp(token->str, ")", 1) != 0){
+			inc = expr();
 		}
 		expect(")");
-		return new_node(ND_FOR, node, stmt());
+		return new_node_for(init, cond, inc, stmt());
 	}
 	else{
 		node = expr();
@@ -296,7 +322,7 @@ Node *assign(){
     Node *node = equality();
 
     if(consume("=")){
-         node = new_node(ND_ASSIGN, node, assign());
+         node = new_node_binary(ND_ASSIGN, node, assign());
     }
     return node;
 }
@@ -306,10 +332,10 @@ Node *equality(){
 
 	for(;;){
 		if(consume("==")){
-			node = new_node(ND_EQ, node, relational());
+			node = new_node_binary(ND_EQ, node, relational());
 		}
 		else if(consume("!=")){
-			node = new_node(ND_NE, node, relational());
+			node = new_node_binary(ND_NE, node, relational());
 		}
 		else{
 			return node;
@@ -322,16 +348,16 @@ Node *relational(){
 
 	for(;;){
 		if(consume("<")){
-			node = new_node(ND_LT, node, add());
+			node = new_node_binary(ND_LT, node, add());
 		}
 		else if(consume(">")){
-			node = new_node(ND_LT, add(), node);
+			node = new_node_binary(ND_LT, add(), node);
 		}
 		else if(consume("<=")){
-			node = new_node(ND_LE, node, add());
+			node = new_node_binary(ND_LE, node, add());
 		}
 		else if(consume(">=")){
-			node = new_node(ND_LE, add(), node);
+			node = new_node_binary(ND_LE, add(), node);
 		}
 		else{
 			return node;
@@ -344,10 +370,10 @@ Node *add(){
 
 	for(;;){
 		if(consume("+")){
-			node = new_node(ND_ADD, node, mul());
+			node = new_node_binary(ND_ADD, node, mul());
 		}
 		else if(consume("-")){
-			node = new_node(ND_SUB, node, mul());
+			node = new_node_binary(ND_SUB, node, mul());
 		}
 		else{
 			return node;
@@ -360,10 +386,10 @@ Node *mul(){
 
 	for(;;){
 		if(consume("*")){
-			node = new_node(ND_MUL, node, unary());
+			node = new_node_binary(ND_MUL, node, unary());
 		}
 		else if(consume("/")){
-			node = new_node(ND_DIV, node, unary());
+			node = new_node_binary(ND_DIV, node, unary());
 		}
 		else{
 			return node;
@@ -376,7 +402,7 @@ Node *unary(){
 		return primary();
 	}
 	if(consume("-")){
-		return new_node(ND_SUB, new_node_num(0), primary());
+		return new_node_binary(ND_SUB, new_node_num(0), primary());
 	}
 	return primary();
 }
