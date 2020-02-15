@@ -31,22 +31,22 @@ int main(int argc, char **argv){
 
     // プロローグ
     // 変数26個分の領域を確保する
-    printf("    push rbp\n");
-    printf("    mov rbp, rsp\n");
-    printf("    sub rsp, 208\n"); // 8bit×26文字
+    printf("  push rbp\n");
+    printf("  mov rbp, rsp\n");
+    printf("  sub rsp, 208\n"); // 8bit×26文字
 
 	// 先頭の式から、抽象構文木を下りコード生成
 	for(int i = 0; code[i]; i++){
         gen(code[i]);
 
         // 式の評価結果をポップ
-        printf("    pop rax\n");
+        printf("  pop rax\n");
     }
 
 	// エピローグ
     // 最後の式の結果がRAXに残っているので、それが返り値
-    printf("    mov rsp, rbp\n");
-	printf("	pop rbp\n");
-	printf("	ret\n");
+    printf("  mov rsp, rbp\n");
+	printf("  pop rbp\n");
+	printf("  ret\n");
     return 0;
 }

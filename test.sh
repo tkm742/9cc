@@ -46,5 +46,7 @@ try 2 "if(1) if(0) 1; else 2; else 3;"
 try 2 "if(0) 1; else if(1) 2; else 3;"
 try 1 "while(1 == 0) 2; 1;"
 try 1 "for(; 1 == 2; ) 2; 1;"
+try 3 "{1; 2; 3;}"
+
 
 echo OK

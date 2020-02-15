@@ -147,7 +147,7 @@ Token *tokenize(char *p){
 			continue;
 		}
 
-		if(strchr("+-*/()<>;=", *p)){
+		if(strchr("+-*/()<>;={}", *p)){
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
@@ -249,6 +249,13 @@ Node *new_node_for(Node *init, Node *cond, Node *inc, Node *then){
 	return node;
 }
 
+Node *new_node_block(Node *body){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = ND_BLOCK;
+	node->body = body;
+	return node;
+}
+
 Node *new_node_num(int val){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = ND_NUM;
@@ -305,6 +312,19 @@ Node *stmt(){
 		}
 		expect(")");
 		return new_node_for(init, cond, inc, stmt());
+	}
+	else if(consume("{")){
+		Node head = {}; // define & initialize
+		Node *cur = new_node(ND_BLOCK);
+		head.next = cur;
+		while(!consume("}")){
+			cur->body = stmt();
+			cur->next = new_node(ND_BLOCK);
+			cur = cur->next;
+		}
+		cur->next = NULL;
+
+		return head.next;
 	}
 	else{
 		node = expr();
