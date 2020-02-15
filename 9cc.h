@@ -34,6 +34,8 @@ typedef enum {
 	ND_NUM, // integer
 	ND_IF, // if
 	ND_ELSE, // else
+	ND_WHILE, // while
+	ND_FOR, // for
 } NodeKind;
 
 // 抽象構文木のノードの型

@@ -9,7 +9,7 @@
 
 int cnt_Lend;
 int cnt_Lelse;
-
+int cnt_Lbegin;
 
 void gen_lval(Node *node){
     if(node->kind != ND_LVAR){
@@ -23,6 +23,12 @@ void gen_lval(Node *node){
 
 
 void gen(Node *node){
+	if(node == NULL) return;
+
+	int cnt_Lelse_tmp;
+	int cnt_Lbegin_tmp;
+	int cnt_Lend_tmp;
+
     switch(node->kind){
 	case ND_RETURN:
 		gen(node->lhs);
@@ -32,23 +38,52 @@ void gen(Node *node){
 		printf("	ret\n");
 		return;
 	case ND_ELSE:
+		cnt_Lelse_tmp = cnt_Lelse++;
+		cnt_Lend_tmp = cnt_Lend++;
 		gen(node->lhs->lhs);
 		printf("	pop rax\n");
 		printf("	cmp rax, 0\n");
-		printf("	je .Lelse%03d\n", cnt_Lelse);
+		printf("	je .Lelse%03d\n", cnt_Lelse_tmp);
 		gen(node->lhs->rhs);
-		printf("	jmp .Lend%03d\n", cnt_Lend);
-		printf(".Lelse%03d:\n", cnt_Lelse++);
+		printf("	jmp .Lend%03d\n", cnt_Lend_tmp);
+		printf(".Lelse%03d:\n", cnt_Lelse_tmp);
 		gen(node->rhs);
-		printf(".Lend%03d:\n", cnt_Lend++);
+		printf(".Lend%03d:\n", cnt_Lend_tmp);
 		return;
 	case ND_IF:
+		cnt_Lend_tmp = cnt_Lend++;
 		gen(node->lhs);
 		printf("	pop rax\n");
 		printf("	cmp rax, 0\n");
-		printf("	je .Lend%03d\n", cnt_Lend);
+		printf("	je .Lend%03d\n", cnt_Lend_tmp);
 		gen(node->rhs);
-		printf(".Lend%03d:\n", cnt_Lend++);
+		printf(".Lend%03d:\n", cnt_Lend_tmp);
+		return;
+	case ND_WHILE:
+		cnt_Lbegin_tmp = cnt_Lbegin++;
+		cnt_Lend_tmp = cnt_Lend++;
+		printf(".Lbegin%03d:\n", cnt_Lbegin_tmp);
+		gen(node->lhs);
+		printf("	pop rax\n");
+		printf("	cmp rax, 0\n");
+		printf("	je .Lend%03d\n", cnt_Lend_tmp);
+		gen(node->rhs);
+		printf("	jmp .Lbegin%03d\n", cnt_Lbegin_tmp);
+		printf(".Lend%03d:\n", cnt_Lend_tmp);
+		return;
+	case ND_FOR:
+		cnt_Lbegin_tmp = cnt_Lbegin++;
+		cnt_Lend_tmp = cnt_Lend++;
+		gen(node->lhs->lhs->lhs->rhs);
+		printf(".Lbegin%03d:\n", cnt_Lbegin_tmp);
+		gen(node->lhs->lhs->rhs);
+		printf("	pop rax\n");
+		printf("	cmp rax, 0\n");
+		printf("	je .Lend%03d\n", cnt_Lend_tmp);
+		gen(node->rhs);
+		gen(node->lhs->rhs);
+		printf("	jmp .Lbegin%03d\n", cnt_Lbegin_tmp);
+		printf(".Lend%03d:", cnt_Lend_tmp);
 		return;
     case ND_NUM:
         printf("    push %d\n", node->val);

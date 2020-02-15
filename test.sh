@@ -42,5 +42,8 @@ try 2 "LVar_1 = 2; LVar_1;"
 try 3 "a = 3; return a;"
 try 1 "if(1 == 1) return 1; else return 0;"
 try 0 "if(1 == 0) return 1; else return 0;"
+try 2 "if(1) if(0) 1; else 2; else 3;"
+try 1 "while(1 == 0) 2; 1;"
+try 1 "for(; 1 == 2; ) 2; 1;"
 
 echo OK

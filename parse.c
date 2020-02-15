@@ -158,9 +158,21 @@ Token *tokenize(char *p){
 			continue;
 		}
 
+		if(strncmp(p, "for", 3) == 0 && !is_alnum(p[3])){
+			cur = new_token(TK_RESERVED, cur, p, 3);
+			p += 3;
+			continue;
+		}
+
 		if(strncmp(p, "else", 4) == 0 && !is_alnum(p[4])){
 			cur = new_token(TK_RESERVED, cur, p, 4);
 			p += 4;
+			continue;
+		}
+
+		if(strncmp(p, "while", 5) == 0 && !is_alnum(p[5])){
+			cur = new_token(TK_RESERVED, cur, p, 5);
+			p += 5;
 			continue;
 		}
 
@@ -236,6 +248,37 @@ Node *stmt(){
 			node = new_node(ND_ELSE, node, stmt());
 		}
 		return node;
+	}
+	else if(consume("while")){
+		expect("(");
+		node = expr();
+		expect(")");
+		return new_node(ND_WHILE, node, stmt());
+	}
+	else if(consume("for")){
+		expect("(");
+		if(strncmp(token->str, ";", 1) == 0){
+			node = new_node(ND_FOR, node, NULL);
+		}
+		else{
+			node = new_node(ND_FOR, node, expr());
+		}
+		expect(";");
+		if(strncmp(token->str, ";", 1) == 0){
+			node = new_node(ND_FOR, node, NULL);
+		}
+		else{
+			node = new_node(ND_FOR, node, expr());
+		}
+		expect(";");
+		if(strncmp(token->str, ")", 1) == 0){
+			node = new_node(ND_FOR, node, NULL);
+		}
+		else{
+			node = new_node(ND_FOR, node, expr());
+		}
+		expect(")");
+		return new_node(ND_FOR, node, stmt());
 	}
 	else{
 		node = expr();
