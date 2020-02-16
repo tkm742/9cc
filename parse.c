@@ -127,6 +127,15 @@ int is_alnum(char c){
 		   (c == '_');
 }
 
+char* strndup(char *str, size_t len) {
+
+    char *buffer = malloc(len + 1);
+    memcpy(buffer, str, len);
+    buffer[len] = '\0';
+
+    return buffer;
+}
+
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize(char *p){
 	Token head;
@@ -436,28 +445,36 @@ Node *primary(){
 
     Token *tok = consume_ident();
     if(tok){
-        Node *node = calloc(1, sizeof(Node));
-        node->kind = ND_LVAR;
-
-		LVar *lvar = find_lvar(tok);
-		if(lvar){
-			node->offset = lvar->offset;
+		if(consume("(")){
+			expect(")");
+			Node *node = new_node(ND_FUNCCALL);
+			node->funcname = strndup(tok->str, tok->len);
+			return node;
 		}
 		else{
-			lvar = calloc(1, sizeof(LVar));
-			lvar->next = locals;
-			lvar->name = tok->str;
-			lvar->len = tok->len;
-			if(locals == NULL){
-				lvar->offset = 8;
+			Node *node = calloc(1, sizeof(Node));
+			node->kind = ND_LVAR;
+
+			LVar *lvar = find_lvar(tok);
+			if(lvar){
+				node->offset = lvar->offset;
 			}
 			else{
-				lvar->offset = locals->offset + 8;
+				lvar = calloc(1, sizeof(LVar));
+				lvar->next = locals;
+				lvar->name = tok->str;
+				lvar->len = tok->len;
+				if(locals == NULL){
+					lvar->offset = 8;
+				}
+				else{
+					lvar->offset = locals->offset + 8;
+				}
+				node->offset = lvar->offset;
+				locals = lvar;
 			}
-			node->offset = lvar->offset;
-			locals = lvar;
+			return node;
 		}
-        return node;
     }
 
 	return new_node_num(expect_number());

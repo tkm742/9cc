@@ -36,6 +36,7 @@ typedef enum {
 	ND_WHILE, // while
 	ND_FOR, // for
 	ND_BLOCK, // {...}
+	ND_FUNCCALL, // 関数呼び出し
 } NodeKind;
 
 // 抽象構文木のノードの型
@@ -51,6 +52,7 @@ struct Node {
 	Node *inc; // forのincrement処理
 	Node *body; // block
 	Node *next; // next node (for block)
+	char *funcname; // 関数名
 	int val; // kindがND_NUMのとき、その数値
 	int offset; // kindがND_LVARのとき、RBPからのoffset
 };
@@ -78,6 +80,7 @@ bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 bool startswith(char *p, char *q);
 int is_alnum(char c);
+char *strndup(char *str, size_t len);
 Token *tokenize(char *p);
 
 Node *new_node(NodeKind kind);
