@@ -53,6 +53,7 @@ struct Node {
 	Node *body; // block
 	Node *next; // next node (for block)
 	char *funcname; // 関数名
+	Node *args; // 引数
 	int val; // kindがND_NUMのとき、その数値
 	int offset; // kindがND_LVARのとき、RBPからのoffset
 };
@@ -66,6 +67,16 @@ struct LVar{
 	int offset; // RBPからのオフセット
 };
 
+// 関数型
+typedef struct Function Function;
+struct Function{
+	Function *next;
+	char *name;
+	Node *node;
+	LVar *locals;
+	int stack_size;
+};
+
 
 //---- prototypes ----
 
@@ -76,6 +87,7 @@ bool consume(char *op);
 Token *consume_ident();
 void expect(char *op);
 int expect_number();
+char *expect_ident();
 bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 bool startswith(char *p, char *q);
@@ -89,7 +101,8 @@ Node *new_node_ifelse(Node *cond, Node *then, Node *els);
 Node *new_node_while(Node *cond, Node *then);
 Node *new_node_for(Node *init, Node *cond, Node *inc, Node *then);
 Node *new_node_num(int val);
-void *program();
+Function *program();
+Function *function();
 Node *stmt();
 Node *expr();
 Node *assign();

@@ -89,6 +89,15 @@ int expect_number(){
 	return val;
 }
 
+char *expect_ident(void){
+	if(token->kind != TK_IDENT){
+		error_at(token->str, "識別子が来るはずです。");
+	}
+	char *s = strndup(token->str, token->len);
+	token = token->next;
+	return s;
+}
+
 bool at_eof(){
 	return token->kind == TK_EOF;
 }
@@ -156,7 +165,7 @@ Token *tokenize(char *p){
 			continue;
 		}
 
-		if(strchr("+-*/()<>;={}", *p)){
+		if(strchr("+-*/()<>;={},", *p)){
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
@@ -272,12 +281,39 @@ Node *new_node_num(int val){
 	return node;
 }
 
-void *program(){
-    int i = 0;
+Function *program(){
+	Function head = {};
+	Function *cur = &head;
+
     while(!at_eof()){
-        code[i++] = stmt();
+        cur->next = function();
+		cur = cur->next;
     }
-    code[i] = NULL;
+
+    return head.next;
+}
+
+Function *function(){
+	locals = NULL;
+
+	char *name = expect_ident();
+	expect("(");
+	expect(")");
+	expect("{");
+
+	Node head = {};
+	Node *cur = &head;
+
+	while(!consume("}")){
+		cur->next = stmt();
+		cur = cur->next;
+	}
+
+	Function *fn = calloc(1, sizeof(Function));
+	fn->name = name;
+	fn->node = head.next;
+	fn->locals = locals;
+	return fn;
 }
 
 Node *stmt(){
@@ -446,9 +482,21 @@ Node *primary(){
     Token *tok = consume_ident();
     if(tok){
 		if(consume("(")){
-			expect(")");
 			Node *node = new_node(ND_FUNCCALL);
 			node->funcname = strndup(tok->str, tok->len);
+			if(consume(")")){
+				node->args = NULL;
+			}
+			else{
+				Node *head = assign();
+				Node *cur = head;
+				while(consume(",")){
+					cur->next = assign();
+					cur = cur->next;
+				}
+				expect(")");
+				node->args = head;
+			}
 			return node;
 		}
 		else{
