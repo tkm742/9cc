@@ -123,10 +123,8 @@ LVar *find_lvar(Token *tok){
 		if(var->len == tok->len && !memcmp(tok->str, var->name, var->len)){
 			return var;
 		}
-		else{
-			return NULL;
-		}
 	}
+	return NULL;
 }
 
 int is_alnum(char c){

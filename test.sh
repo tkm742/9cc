@@ -46,5 +46,6 @@ try 2 "main(){if(1) if(0) return 1; else return 2; else return 3;}"
 try 2 "main(){if(0) return 1; else if(1) return 2; else return 3;}"
 try 1 "main(){while(1 == 0) 2; return 1;}"
 try 1 "main(){for(; 1 == 2; ) 2; return 1;}"
+try 3 "main(){a = 2; b = a + 1; return b;}"
 
 echo OK
