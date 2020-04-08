@@ -72,7 +72,7 @@ void expect(char *op){
 	if(token->kind != TK_RESERVED 
 		|| strlen(op) != token->len
 		|| memcmp(token->str, op, token->len)){
-		error_at(token->str, "'%c'ではありません。", op);
+		error_at(token->str, "'%c'ではありません。", *op);
 	}
 	token = token->next;
 }
@@ -296,6 +296,7 @@ Function *function(){
 
 	char *name = expect_ident();
 	expect("(");
+
 	expect(")");
 	expect("{");
 
