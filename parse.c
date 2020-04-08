@@ -150,8 +150,8 @@ Token *tokenize(char *p){
 	Token *cur = &head;
 
 	while(*p){
-		// 空白文字をスキップ
-		if(isspace(*p)){
+		// 空白文字、改行をスキップ
+		if(isspace(*p) || *p == '\n'){
 			p++;
 			continue;
 		}
