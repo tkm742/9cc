@@ -201,21 +201,21 @@ Token *tokenize(char *p){
 		}
 
         if(isalpha(*p)){
-			char *p_before = p;
+			char *p_begin = p;
 			int len = 0;
 			while(is_alnum(*p)){
 				len++;
 				p++;
 			}
-            cur = new_token(TK_IDENT, cur, p_before, len);
+            cur = new_token(TK_IDENT, cur, p_begin, len);
             continue;
         }
 
 		if(isdigit(*p)){
 			cur = new_token(TK_NUM, cur, p, 0);
-			char *p_before = p;
+			char *p_begin = p;
 			cur->val = strtol(p, &p, 10);
-			cur->len = p - p_before;
+			cur->len = p - p_begin;
 			continue;
 		}
 
