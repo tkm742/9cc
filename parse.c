@@ -163,7 +163,7 @@ Token *tokenize(char *p){
 			continue;
 		}
 
-		if(strchr("+-*/()<>;={},", *p)){
+		if(strchr("+-*/()<>;={}&,", *p)){
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
@@ -235,6 +235,13 @@ Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs){
 	node->kind = kind;
 	node->lhs = lhs;
 	node->rhs = rhs;
+	return node;
+}
+
+Node *new_node_unary(NodeKind kind, Node *unary){
+	Node *node = calloc(1, sizeof(Node));
+	node->kind = kind;
+	node->lhs = unary;
 	return node;
 }
 
@@ -496,6 +503,12 @@ Node *unary(){
 	if(consume("-")){
 		return new_node_binary(ND_SUB, new_node_num(0), primary());
 	}
+	if(consume("*")){
+		return new_node_unary(ND_DEREF, unary());
+	}
+	if(consume("&")){
+		return new_node_unary(ND_ADDR, unary());
+	}
 	return primary();
 }
 
@@ -538,13 +551,6 @@ Node *primary(){
 				lvar->next = locals;
 				lvar->name = tok->str;
 				lvar->len = tok->len;
-				// if(locals == NULL){
-				// 	lvar->offset = 8;
-				// }
-				// else{
-				// 	lvar->offset = locals->offset + 8;
-				// }
-				// node->offset = lvar->offset;
 				locals = lvar;
 			}
 			node->lvar = lvar;

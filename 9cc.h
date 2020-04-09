@@ -34,6 +34,8 @@ typedef enum {
 	ND_LT, // <
 	ND_LE, // <=
 	ND_ASSIGN, // =
+	ND_ADDR, // unary &
+	ND_DEREF, // unary *
 	ND_LVAR, // local variable
 	ND_RETURN, // return
 	ND_NUM, // integer
@@ -41,7 +43,7 @@ typedef enum {
 	ND_WHILE, // while
 	ND_FOR, // for
 	ND_BLOCK, // {...}
-	ND_FUNCCALL, // 関数呼び出し
+	ND_FUNCCALL, // function call
 } NodeKind;
 
 // 抽象構文木のノードの型
