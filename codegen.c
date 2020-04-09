@@ -7,10 +7,9 @@
 
 #include "9cc.h"
 
-
-static char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 int cnt_label;
 char *funcname;
+extern char *argreg[];
 
 void gen_lval(Node *node){
     if(node->kind != ND_LVAR){
@@ -18,7 +17,7 @@ void gen_lval(Node *node){
     }
 
     printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", node->offset);
+    printf("  sub rax, %d\n", node->lvar->offset);
     printf("  push rax\n");
 }
 

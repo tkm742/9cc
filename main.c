@@ -11,6 +11,7 @@ Token *token; // 現在注目しているトークン
 Node *code[100];
 char *user_input; // 入力プログラム
 extern char *funcname;
+char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 
 int main(int argc, char **argv){
@@ -25,6 +26,7 @@ int main(int argc, char **argv){
 	token = tokenize(argv[1]);
     Function *prog = program();
 
+    // ローカル変数の offset を設定
     for(Function *fn = prog; fn; fn = fn->next){
         int offset = 0;
         for(LVar *lvar = prog->locals; lvar; lvar = lvar->next){
@@ -34,20 +36,24 @@ int main(int argc, char **argv){
         fn->stack_size = offset;
     }
 
-	// // アセンブリの前半部分を出力
+	// アセンブリの前半部分を出力
 	printf(".intel_syntax noprefix\n");
-	// printf(".global main\n");
-	// printf("main:\n");
     for(Function *fn = prog; fn; fn = fn->next){
         printf(".global %s\n", fn->name);
         printf("%s:\n", fn->name);
         funcname = fn->name;
 
         // プロローグ
-        // 変数26個分の領域を確保する
+        // ローカル変数の領域を確保する
         printf("  push rbp\n");
         printf("  mov rbp, rsp\n");
         printf("  sub rsp, %d\n", fn->stack_size); 
+
+        // 関数の引数の領域を確保する
+        int i = 0;
+        for(LVar *var = fn->params; var; var = var->next){
+            printf("  mov [rbp-%d], %s\n", var->offset, argreg[i++]);
+        }
 
         // 先頭の式から、抽象構文木を下りコード生成
         for(Node *node = fn->node; node; node = node->next){

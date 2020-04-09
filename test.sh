@@ -47,5 +47,7 @@ try 2 "main(){if(0) return 1; else if(1) return 2; else return 3;}"
 try 1 "main(){while(1 == 0) 2; return 1;}"
 try 1 "main(){for(; 1 == 2; ) 2; return 1;}"
 try 3 "main(){a = 2; b = a + 1; return b;}"
+try 4 "test(x, y){return x + y;} main(){return test(1, 3);}"
+try 8 "fibo(n){if(n == 0){return 0;} else if(n == 1){return 1;} else{return fibo(n-1) + fibo(n-2);}} main(){return fibo(6);}"
 
 echo OK

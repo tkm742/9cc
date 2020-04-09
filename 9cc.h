@@ -1,5 +1,10 @@
 //---- enum & typedef ----
 
+typedef struct Token Token;
+typedef struct LVar LVar;
+typedef struct Function Function;
+typedef struct Node Node;
+
 typedef enum {
 	TK_RESERVED, // 記号
 	TK_IDENT, // 識別子
@@ -10,7 +15,7 @@ typedef enum {
 } TokenKind;
 
 // トークン型
-typedef struct Token Token;
+
 struct Token {
 	TokenKind kind;	// トークンの種類
 	Token *next; 	// 次の入力トークン
@@ -40,7 +45,6 @@ typedef enum {
 } NodeKind;
 
 // 抽象構文木のノードの型
-typedef struct Node Node;
 struct Node {
 	NodeKind kind; // ノードの型
 	Node *lhs; // 左辺
@@ -55,11 +59,11 @@ struct Node {
 	char *funcname; // 関数名
 	Node *args; // 引数
 	int val; // kindがND_NUMのとき、その数値
+	LVar *lvar; // kindがND_LVARのとき、lvarへのポインタ
 	int offset; // kindがND_LVARのとき、RBPからのoffset
 };
 
 // ローカル変数の型
-typedef struct LVar LVar;
 struct LVar{
 	LVar *next; // 次のローカル変数
 	char *name; // ローカル変数の名前
@@ -68,12 +72,12 @@ struct LVar{
 };
 
 // 関数型
-typedef struct Function Function;
 struct Function{
 	Function *next;
 	char *name;
 	Node *node;
 	LVar *locals;
+	LVar *params;
 	int stack_size;
 };
 

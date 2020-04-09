@@ -279,6 +279,28 @@ Node *new_node_num(int val){
 	return node;
 }
 
+LVar *new_lvar(char *name){
+	LVar *var = calloc(1, sizeof(LVar));
+	var->name = name;
+	var->len  = strlen(name);
+	var->next = locals;
+	locals = var;
+	return var;
+}
+
+LVar *read_func_params(void){
+	if(consume(")")) return NULL;
+
+	LVar *params = new_lvar(expect_ident());
+
+	while(!consume(")")){
+		expect(",");
+		params = new_lvar(expect_ident());
+	}
+
+	return params;
+}
+
 Function *program(){
 	Function head = {};
 	Function *cur = &head;
@@ -294,10 +316,17 @@ Function *program(){
 Function *function(){
 	locals = NULL;
 
-	char *name = expect_ident();
-	expect("(");
+	// Function 構造体を生成
+	Function *fn = calloc(1, sizeof(Function));
 
-	expect(")");
+	// 関数名をパース
+	fn->name = expect_ident();
+
+	// 引数をパース
+	expect("(");
+	fn->params = read_func_params();
+
+	// ブロックをパース
 	expect("{");
 
 	Node head = {};
@@ -308,10 +337,9 @@ Function *function(){
 		cur = cur->next;
 	}
 
-	Function *fn = calloc(1, sizeof(Function));
-	fn->name = name;
 	fn->node = head.next;
 	fn->locals = locals;
+
 	return fn;
 }
 
@@ -480,6 +508,7 @@ Node *primary(){
 
     Token *tok = consume_ident();
     if(tok){
+		// function call
 		if(consume("(")){
 			Node *node = new_node(ND_FUNCCALL);
 			node->funcname = strndup(tok->str, tok->len);
@@ -498,28 +527,27 @@ Node *primary(){
 			}
 			return node;
 		}
+		// local variable
 		else{
 			Node *node = calloc(1, sizeof(Node));
 			node->kind = ND_LVAR;
 
 			LVar *lvar = find_lvar(tok);
-			if(lvar){
-				node->offset = lvar->offset;
-			}
-			else{
+			if(!lvar){
 				lvar = calloc(1, sizeof(LVar));
 				lvar->next = locals;
 				lvar->name = tok->str;
 				lvar->len = tok->len;
-				if(locals == NULL){
-					lvar->offset = 8;
-				}
-				else{
-					lvar->offset = locals->offset + 8;
-				}
-				node->offset = lvar->offset;
+				// if(locals == NULL){
+				// 	lvar->offset = 8;
+				// }
+				// else{
+				// 	lvar->offset = locals->offset + 8;
+				// }
+				// node->offset = lvar->offset;
 				locals = lvar;
 			}
+			node->lvar = lvar;
 			return node;
 		}
     }
