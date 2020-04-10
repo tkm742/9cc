@@ -9,7 +9,6 @@
 
 
 extern Token *token;
-extern Node *code[100];
 LVar *locals;
 
 

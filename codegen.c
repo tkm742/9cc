@@ -7,9 +7,11 @@
 
 #include "9cc.h"
 
+
 int cnt_label;
 char *funcname;
-extern char *argreg[];
+char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 
 void gen_lval(Node *node){
     if(node->kind != ND_LVAR){
@@ -21,6 +23,40 @@ void gen_lval(Node *node){
     printf("  push rax\n");
 }
 
+void codegen(Function *prog){
+		
+	// アセンブリの前半部分を出力
+	printf(".intel_syntax noprefix\n");
+    for(Function *fn = prog; fn; fn = fn->next){
+        printf(".global %s\n", fn->name);
+        printf("%s:\n", fn->name);
+        funcname = fn->name;
+
+        // プロローグ
+        // ローカル変数の領域を確保する
+        printf("  push rbp\n");
+        printf("  mov rbp, rsp\n");
+        printf("  sub rsp, %d\n", fn->stack_size); 
+
+        // 関数の引数の領域を確保する
+        int i = 0;
+        for(LVar *var = fn->params; var; var = var->next){
+            printf("  mov [rbp-%d], %s\n", var->offset, argreg[i++]);
+        }
+
+        // 先頭の式から、抽象構文木を下りコード生成
+        for(Node *node = fn->node; node; node = node->next){
+            gen(node);
+        }
+
+        // エピローグ
+        // 最後の式の結果がRAXに残っているので、それが返り値
+        printf(".Lreturn_%s:\n", funcname);
+        printf("  mov rsp, rbp\n");
+        printf("  pop rbp\n");
+        printf("  ret\n");
+    }
+}
 
 void gen(Node *node){
 	if(node == NULL) return;

@@ -152,4 +152,5 @@ Node *unary();
 Node *primary();
 
 void gen_lval(Node *node);
+void codegen(Function *prog);
 void gen(Node *node);
