@@ -29,9 +29,6 @@ void gen(Node *node){
 	case ND_RETURN:
 		gen(node->lhs);
 		printf("  pop rax\n");
-		// printf("  mov rsp, rbp\n");
-		// printf("  pop rbp\n");
-		// printf("  ret\n");
 		printf("  jmp .Lreturn_%s\n", funcname);
 		return;
 	case ND_IF:

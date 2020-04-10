@@ -1,9 +1,12 @@
+#include <stdbool.h>
+
 //---- enum & typedef ----
 
 typedef struct Token Token;
 typedef struct LVar LVar;
 typedef struct Function Function;
 typedef struct Node Node;
+typedef struct Type Type;
 
 typedef enum {
 	TK_RESERVED, // 記号
@@ -11,8 +14,12 @@ typedef enum {
 	TK_NUM, // 整数トークン
 	TK_IF, // ifトークン
 	TK_EOF, // 入力終わりトークン
-	TK_RETURN, // returnトークン
 } TokenKind;
+
+typedef enum {
+	TY_INT, // int型
+	TY_PTR, // ポインタ型
+} TypeKind;
 
 // トークン型
 
@@ -44,6 +51,7 @@ typedef enum {
 	ND_FOR, // for
 	ND_BLOCK, // {...}
 	ND_FUNCCALL, // function call
+	ND_NULL, 
 } NodeKind;
 
 // 抽象構文木のノードの型
@@ -70,6 +78,7 @@ struct LVar{
 	LVar *next; // 次のローカル変数
 	char *name; // ローカル変数の名前
 	int len; // 変数名の長さ
+	Type *ty;
 	int offset; // RBPからのオフセット
 };
 
@@ -82,6 +91,21 @@ struct Function{
 	LVar *params;
 	int stack_size;
 };
+
+// "型"の型
+struct Type{
+	TypeKind kind;
+};
+
+
+
+
+//---- extern ----
+
+extern Type *int_type;
+
+
+
 
 
 //---- prototypes ----
@@ -103,12 +127,20 @@ Token *tokenize(char *p);
 
 Node *new_node(NodeKind kind);
 Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);
+Node *new_node_unary(NodeKind kind, Node *unary);
 Node *new_node_ifelse(Node *cond, Node *then, Node *els);
 Node *new_node_while(Node *cond, Node *then);
 Node *new_node_for(Node *init, Node *cond, Node *inc, Node *then);
 Node *new_node_num(int val);
+Node *new_node_lvar(LVar *var);
+
+LVar *new_lvar(char *name, Type *ty);
+LVar *read_func_params(void);
+
 Function *program();
+Type *basetype();
 Function *function();
+Node *declaration();
 Node *stmt();
 Node *expr();
 Node *assign();
