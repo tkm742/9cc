@@ -50,5 +50,8 @@ try 3 "int main(){a = 2; b = a + 1; return b;}"
 try 4 "int test(int x, int y){return x + y;} int main(){return test(1, 3);}"
 try 8 "int fibo(int n){if(n == 0){return 0;} else if(n == 1){return 1;} else{return fibo(n-1) + fibo(n-2);}} int main(){return fibo(6);}"
 try 3 "int main(){int x = 3; int y = &x; return *y;}"
+try 2 "int main(){int x=2; int *y = &x; return *y;}"
+try 3 "int main(){int x=2; int *y = &x; *y = 3; return x;}"
+try 4 "int main(){int x=4; int *y = &x; int **z = &y; return **z;}"
 
 echo OK

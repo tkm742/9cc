@@ -131,6 +131,9 @@ Function *program(){
 Type *basetype(){
 	expect("int");
 	Type *ty = int_type;
+	while(consume("*")){
+		ty = pointer_to(ty);
+	}
 	return ty;
 }
 
@@ -179,6 +182,7 @@ Node *declaration(){
 	expect(";");
 
 	Node *node = new_node_binary(ND_ASSIGN, lhs, rhs);
+	return node;
 }
 
 Node *stmt(){

@@ -95,6 +95,7 @@ struct Function{
 // "型"の型
 struct Type{
 	TypeKind kind;
+	Type *base;
 };
 
 
@@ -109,6 +110,9 @@ extern Type *int_type;
 
 
 //---- prototypes ----
+
+bool is_integer(Type *ty);
+Type *pointer_to(Type *base);
 
 void error_at(char *loc, char *fmt, ...);
 void error(char *fmt, ...);
