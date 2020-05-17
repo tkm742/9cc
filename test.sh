@@ -53,5 +53,7 @@ try 3 "int main(){int x = 3; int y = &x; return *y;}"
 try 2 "int main(){int x=2; int *y = &x; return *y;}"
 try 3 "int main(){int x=2; int *y = &x; *y = 3; return x;}"
 try 4 "int main(){int x=4; int *y = &x; int **z = &y; return **z;}"
+try 4 "int main(){int x=1; return sizeof(x);}"
+try 8 "int main(){int *x; *x = 1; return sizeof(x);}"
 
 echo OK

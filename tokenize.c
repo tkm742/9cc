@@ -128,7 +128,7 @@ char *starts_with_reserved(char *p){
 
 	// 予約語チェック
 	static char *kw[] = {
-		"return", "if", "else", "while", "for", "int"
+		"return", "if", "else", "while", "for", "int", "sizeof"
 	};
 	for(int i = 0; i < sizeof(kw) / sizeof(*kw); i++){
 		int len = strlen(kw[i]);
@@ -157,7 +157,6 @@ Token *tokenize(char *p){
 	Token *cur = &head;
 
 	while(*p){
-
 		// 空白文字、改行をスキップ
 		if(isspace(*p) || *p == '\n'){
 			p++;

@@ -365,6 +365,17 @@ Node *mul(){
 }
 
 Node *unary(){
+	if(consume("sizeof")){
+		Node *node = unary();
+		add_type(node);
+		if(node->lvar->ty->kind == TY_INT){
+			return new_node_num(4);
+		}
+		if(node->lvar->ty->kind == TY_PTR){
+			return new_node_num(8);
+		}
+	}
+
 	if(consume("+")){
 		return primary();
 	}
