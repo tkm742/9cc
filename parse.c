@@ -37,6 +37,36 @@ Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs){
 	return node;
 }
 
+Node *new_node_add(Node *lhs, Node *rhs){
+	add_type(lhs);
+	add_type(rhs);
+
+	if(is_integer(lhs->ty) && is_integer(rhs->ty)){
+		return new_node_binary(ND_ADD, lhs, rhs);
+	}
+	if(lhs->ty->base && is_integer(rhs->ty)){
+		return new_node_binary(ND_PTR_ADD, lhs, rhs);
+	}
+	if(is_integer(lhs->ty) && rhs->ty->base){
+		return new_node_binary(ND_PTR_ADD, rhs, lhs);
+	}
+}
+
+Node *new_node_sub(Node *lhs, Node *rhs){
+	add_type(lhs);
+	add_type(rhs);
+
+	if(is_integer(lhs->ty) && is_integer(rhs->ty)){
+		return new_node_binary(ND_SUB, lhs, rhs);
+	}
+	if(lhs->ty->base && is_integer(rhs->ty)){
+		return new_node_binary(ND_PTR_SUB, lhs, rhs);
+	}
+	if(lhs->ty->base && rhs->ty->base){
+		return new_node_binary(ND_PTR_DIFF, lhs, rhs);
+	}
+}
+
 Node *new_node_unary(NodeKind kind, Node *unary){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = kind;
