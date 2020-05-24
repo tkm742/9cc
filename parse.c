@@ -358,7 +358,7 @@ Node *add(){
 
 	for(;;){
 		if(consume("+")){
-			node = new_node_binary(ND_ADD, node, mul());
+			node = new_node_add(node, mul());
 		}
 		else if(consume("-")){
 			node = new_node_binary(ND_SUB, node, mul());
@@ -409,7 +409,18 @@ Node *unary(){
 	if(consume("&")){
 		return new_node_unary(ND_ADDR, unary());
 	}
-	return primary();
+	return postfix();
+}
+
+Node *postfix(){
+	Node *node = primary();
+
+	while(consume("[")){
+		Node *exp = new_node_add(node, expr());
+		expect("]");
+		node = new_node_unary(ND_DEREF, exp);
+	}
+	return node;
 }
 
 Node *primary(){

@@ -165,6 +165,7 @@ Node *relational();
 Node *add();
 Node *mul();
 Node *unary();
+Node *postfix();
 Node *primary();
 
 void gen_addr(Node *node);
