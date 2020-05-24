@@ -2,7 +2,7 @@
 #include "9cc.h"
 
 // Type型構造体を生成
-Type *int_type = &(Type){ TY_INT };
+Type *int_type = &(Type){ TY_INT, 8 };
 
 bool is_integer(Type *ty){
     return ty->kind == TY_INT;
@@ -12,6 +12,16 @@ Type *pointer_to(Type *base){
     Type *ty = calloc(1, sizeof(Type));
     ty->kind = TY_PTR;
     ty->base = base;
+    ty->size = 8;
+    return ty;
+}
+
+Type *array_of(Type *base, int array_len){
+    Type *ty = calloc(1, sizeof(Type));
+    ty->kind = TY_ARRAY;
+    ty->size = array_len * base->size;
+    ty->base = base;
+    ty->array_len = array_len;
     return ty;
 }
 
@@ -45,7 +55,6 @@ void add_type(Node *node){
     case ND_NE:
     case ND_LT:
     case ND_LE:
-    case ND_LVAR:
     case ND_FUNCCALL:
     case ND_NUM:
         node->ty = int_type;
@@ -54,6 +63,9 @@ void add_type(Node *node){
     case ND_PTR_SUB:
     case ND_ASSIGN:
         node->ty = node->lhs->ty;
+        return;
+    case ND_LVAR:
+        node->ty = node->lvar->ty;
         return;
     case ND_ADDR:
         node->ty = pointer_to(node->lhs->ty);

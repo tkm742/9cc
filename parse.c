@@ -135,12 +135,16 @@ LVar *read_func_params(void){
 	if(consume(")")) return NULL;
 
 	Type *ty = basetype();
-	LVar *params = new_lvar(expect_ident(), ty);
+	char *name = expect_ident();
+	ty = read_type_suffix(ty);
+	LVar *params = new_lvar(name, ty);
 
 	while(!consume(")")){
 		expect(",");
 		Type *ty = basetype();
-		params = new_lvar(expect_ident(), ty);
+		char *name = expect_ident();
+		ty = read_type_suffix(ty);
+		params = new_lvar(name, ty);
 	}
 
 	return params;
@@ -165,6 +169,15 @@ Type *basetype(){
 		ty = pointer_to(ty);
 	}
 	return ty;
+}
+
+Type *read_type_suffix(Type *base){
+	if(!consume("[")){
+		return base;
+	}
+	int array_len = expect_number();
+	expect("]");
+	return array_of(base, array_len);
 }
 
 Function *function(){
@@ -200,7 +213,9 @@ Function *function(){
 
 Node *declaration(){
 	Type *ty = basetype();
-	LVar *var = new_lvar(expect_ident(), ty);
+	char *name = expect_ident();
+	ty = read_type_suffix(ty);
+	LVar *var = new_lvar(name, ty);
 
 	if(consume(";")){
 		return new_node(ND_NULL);
@@ -216,6 +231,12 @@ Node *declaration(){
 }
 
 Node *stmt(){
+	Node *node = stmt2();
+	add_type(node);
+	return node;
+}
+
+Node *stmt2(){
     Node *node;
 
 	if(consume("return")){

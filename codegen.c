@@ -26,24 +26,28 @@ void store(){
 }
 
 void gen_lval(Node *node){
-    if(node->kind != ND_LVAR){
-        error("代入の左辺値が変数ではありません。");
-    }
+    if(node->ty->kind == TY_ARRAY){
+		fprintf(stderr, "左辺値ではありません");
+		exit(1);
+	}
 
-    printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", node->lvar->offset);
-    printf("  push rax\n");
+	gen_addr(node);
 }
 
 void gen_addr(Node *node){
 	switch(node->kind){
 	case ND_LVAR:
-		gen_lval(node);
+		printf("  mov rax, rbp\n");
+		printf("  sub rax, %d\n", node->lvar->offset);
+		printf("  push rax\n");
 		return;
 	case ND_DEREF:
 		gen(node->lhs);
 		return;
 	}
+
+	fprintf(stderr, "左辺値ではありません");
+	exit(1);
 }
 
 void codegen(Function *prog){
@@ -179,10 +183,12 @@ void gen(Node *node){
         return;
     case ND_LVAR:
 		gen_addr(node);
-		load();
+		if(node->ty->kind != TY_ARRAY){
+			load();
+		}
         return;
     case ND_ASSIGN:
-        gen_addr(node->lhs);
+        gen_lval(node->lhs);
         gen(node->rhs);
 		store();
         return;
@@ -191,7 +197,9 @@ void gen(Node *node){
 		return;
 	case ND_DEREF:
 		gen(node->lhs);
-		load();
+		if(node->ty->kind != TY_ARRAY){
+			load();
+		}
 		return;
     }
 
@@ -206,20 +214,20 @@ void gen(Node *node){
 		printf("  add rax, rdi\n");
 		break;
 	case ND_PTR_ADD:
-		printf("  imul rdi, 8\n");
+		printf("  imul rdi, %d\n", node->ty->base->size);
 		printf("  add rax, rdi");
 		break;
 	case ND_SUB:
 		printf("  sub rax, rdi\n");
 		break;
 	case ND_PTR_SUB:
-		printf("  imul rdi, 8\n");
+		printf("  imul rdi, %d\n", node->ty->base->size);
 		printf("  sub rax, rdi\n");
 		break;
 	case ND_PTR_DIFF:
 		printf("  sub rax, rdi\n");
 		printf("  cqo\n");
-		printf("  mov rdi, 8\n");
+		printf("  mov rdi, %d\n", node->ty->base->size);
 		printf("  idiv rdi\n");
 	case ND_MUL:
 		printf("  imul rax, rdi\n");

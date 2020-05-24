@@ -19,6 +19,7 @@ typedef enum {
 typedef enum {
 	TY_INT, // int型
 	TY_PTR, // ポインタ型
+	TY_ARRAY, // 配列型
 } TypeKind;
 
 // トークン型
@@ -100,7 +101,9 @@ struct Function{
 // "型"の型
 struct Type{
 	TypeKind kind;
+	int size; // for sizeof()
 	Type *base;
+	int array_len;
 };
 
 
@@ -119,6 +122,7 @@ extern Type *int_type;
 bool is_integer(Type *ty);
 void add_type(Node *node);
 Type *pointer_to(Type *base);
+Type *array_of(Type *base, int size);
 
 void error_at(char *loc, char *fmt, ...);
 void error(char *fmt, ...);
@@ -149,9 +153,11 @@ LVar *read_func_params(void);
 
 Function *program();
 Type *basetype();
+Type *read_type_suffix(Type *base);
 Function *function();
 Node *declaration();
 Node *stmt();
+Node *stmt2();
 Node *expr();
 Node *assign();
 Node *equality();
@@ -161,6 +167,7 @@ Node *mul();
 Node *unary();
 Node *primary();
 
+void gen_addr(Node *node);
 void gen_lval(Node *node);
 void codegen(Function *prog);
 void gen(Node *node);

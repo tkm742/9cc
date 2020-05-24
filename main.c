@@ -27,11 +27,13 @@ int main(int argc, char **argv){
     for(Function *fn = prog; fn; fn = fn->next){
         int offset = 0;
         for(LVar *lvar = prog->locals; lvar; lvar = lvar->next){
-            offset += 8;
+            offset += lvar->ty->size;
             lvar->offset = offset;
         }
         fn->stack_size = offset;
     }
+
+
 
     codegen(prog);
 
